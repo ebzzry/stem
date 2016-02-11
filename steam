@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+
+XBOXDRV_DIR=$HOME/home/etc/xboxdrv
+SCRIPT_NAME=`basename $0`
+
+OPT_HELP=
+OPT_KILL_XBOXDRV=
+OPT_LOAD_XBOXDRV=
+
+error () {
+  echo -e "\e[0;31m\e[1merror: \e[0;0m$@" >&2
+  exit 1
+}
+
+display_help () {
+  cat <<EOF
+$SCRIPT_NAME: <options>
+
+OPTIONS:
+EOF
+  exit 0
+}
+
+kill_xboxdrv () {
+  sudo kill $(pgrep -a xboxdrv | awk '{print $1}')
+  exit $?
+}
+
+load_xboxdrv () {
+  local instance_count=$(pgrep -a xboxdrv | wc -l)
+  local profile=${1:-general}
+
+  if [[ "$instance_count" != 2 ]]; then
+      echo then
+      # player 1
+      mute sudo xboxdrv --id 0 \
+           --type xbox360 \
+           -c $XBOXDRV_DIR/${profile}_1.xboxdrv &
+
+      # player 2
+      mute sudo xboxdrv --id 1 \
+           --type xbox360 \
+           -c $XBOXDRV_DIR/${profile}_2.xboxdrv &
+  else
+    echo else
+  fi
+}
+
+check_options () {
+  if [[ -n "$OPT_HELP" ]]; then
+      display_help
+  elif [[ -n "$OPT_KILL_XBOXDRV" ]]; then
+      kill_xboxdrv
+  elif [[ -n "$OPT_LOAD_XBOXDRV" ]]; then
+      load_xboxdrv
+      exit 0
+  else
+    return 0
+  fi
+}
+
+check_devices () {
+  if [[ "$(xboxdrv -L | wc -l)" == 4 ]]; then
+      return 0
+  else
+    error "please plug-in the controllers"
+  fi
+}
+
+mute () {
+  $@ > /dev/null 2>&1
+}
+
+run_steam () {
+  WINEDEBUG=-all \
+           wine "$HOME/.wine/drive_c/Program Files/Steam/Steam.exe" $@
+}
+
+main () {
+  while getopts ":hkl" opt; do
+    case $opt in
+      h) OPT_HELP=true ;;
+      k) OPT_KILL_XBOXDRV=true ;;
+      l) OPT_LOAD_XBOXDRV=true ;;
+      *) return 1 ;;
+    esac
+  done
+
+  shift $((OPTIND-1))
+
+  check_options
+  check_devices
+  load_xboxdrv ${2:-}
+
+  if [[ $# > 0 && $# < 3 ]]; then
+      run_steam ${1:-}
+  else
+    display_help
+  fi
+}
+
+main $@
