@@ -8,6 +8,7 @@ SCRIPT_NAME=`basename $0`
 OPT_HELP=
 OPT_KILL_XBOXDRV=
 OPT_LOAD_XBOXDRV=
+OPT_LIST_XBOXDRV=
 OPT_CONTROLLERS=2
 
 error () {
@@ -21,9 +22,7 @@ mute () {
 
 display_help () {
   cat <<EOF
-$SCRIPT_NAME: <options>
-
-OPTIONS:
+Usage: $SCRIPT_NAME [OPTIONS] <STEAM_GAME_ID> <XBOXDRV_PROFILE>
 EOF
   exit 0
 }
@@ -57,18 +56,35 @@ load_xboxdrv () {
              --type xbox360 \
              -c $XBOXDRV_DIR/${profile}_${id}.xboxdrv &
       done
-  else
-    return 1
   fi
 }
 
-process_options () {
+set_options () {
+  while getopts ":hklLc:" opt; do
+    case $opt in
+      h) OPT_HELP=true ;;
+      k) OPT_KILL_XBOXDRV=true ;;
+      l) OPT_LOAD_XBOXDRV=true ;;
+      L) OPT_LIST_XBOXDRV=true ;;
+      c) OPT_CONTROLLERS=${OPTARG} ;;
+      *) return 1 ;;
+    esac
+  done
+
+  shift $((OPTIND-1))
+
+}
+
+exec_options () {
   if [[ -n "$OPT_HELP" ]]; then
       display_help
   elif [[ -n "$OPT_KILL_XBOXDRV" ]]; then
       kill_xboxdrv
   elif [[ -n "$OPT_LOAD_XBOXDRV" ]]; then
       load_xboxdrv
+      exit 0
+  elif [[ -n "$OPT_LIST_XBOXDRV" ]]; then
+      pgrep -a xboxdrv
       exit 0
   else
     return 0
@@ -80,30 +96,19 @@ run_steam () {
            wine "$HOME/.wine/drive_c/Program Files/Steam/Steam.exe" $@
 }
 
-main () {
-  while getopts ":hklc:" opt; do
-    case $opt in
-      h) OPT_HELP=true ;;
-      k) OPT_KILL_XBOXDRV=true ;;
-      l) OPT_LOAD_XBOXDRV=true ;;
-      c) OPT_CONTROLLERS=${OPTARG} ;;
-      *) return 1 ;;
-    esac
-  done
-
-  shift $((OPTIND-1))
-
-  # set_options
-  process_options
-
-  #check_devices
-  load_xboxdrv ${2:-}
-
-  if [[ $# > 0 && $# < 3 ]]; then
-      echo run_steam ${1:-}
+launch () {
+  if [[ $# -ge 0 && $# < 3 ]]; then
+      run_steam ${1:-}
   else
     display_help
   fi
+}
+
+main () {
+  set_options $@
+  exec_options
+  load_xboxdrv ${2:-}
+  launch $@
 }
 
 main $@
