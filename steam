@@ -62,10 +62,13 @@ check_options () {
 }
 
 check_devices () {
-  if [[ "$(xboxdrv -L | wc -l)" == 4 ]]; then
+  local controller_count=$(xboxdrv -L | wc -l)
+  local controller_code=$(xboxdrv -L | egrep -q '^no controller detected$'; echo $?)
+
+  if [[ ${controller_count} == 4 && ${controller_code} != 0 ]]; then
       return 0
   else
-    error "please plug-in the controllers"
+    error "Please plug-in the controllers, then run this program again."
   fi
 }
 
