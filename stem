@@ -93,7 +93,6 @@ exec_options () {
   fi
 
   if [[ -n "$OPT_LIST_DEVICES" ]]; then
-      echo list_devices
       list_devices
       exit 0
   fi
