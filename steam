@@ -4,6 +4,7 @@ set -o pipefail
 
 XBOXDRV_DIR=$HOME/home/etc/xboxdrv
 SCRIPT_NAME=`basename $0`
+STEAM_EXE="$HOME/.wine/drive_c/Program Files/Steam/Steam.exe"
 
 OPT_HELP=
 OPT_KILL=
@@ -99,9 +100,16 @@ exec_options () {
   fi
 }
 
+check_steam () {
+  if [[ -f "$STEAM_EXE" ]]; then
+      return 0
+  else
+    return 1
+  fi
+}
+
 run_steam () {
-  WINEDEBUG=-all \
-           wine "$HOME/.wine/drive_c/Program Files/Steam/Steam.exe" $@
+  WINEDEBUG=-all wine $STEAM_EXE $@
 }
 
 launch () {
@@ -113,10 +121,14 @@ launch () {
 }
 
 main () {
-  set_options $@
-  exec_options
-  load_xboxdrv ${2:-}
-  launch $@
+  if check_steam; then
+      set_options $@
+      exec_options
+      load_xboxdrv ${2:-}
+      launch $@
+  else
+    error "Please install Windows Steam, then re-run this program"
+  fi
 }
 
 main $@
