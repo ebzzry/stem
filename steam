@@ -6,9 +6,9 @@ XBOXDRV_DIR=$HOME/home/etc/xboxdrv
 SCRIPT_NAME=`basename $0`
 
 OPT_HELP=
-OPT_KILL_XBOXDRV=
-OPT_LOAD_XBOXDRV=
-OPT_LIST_XBOXDRV=
+OPT_KILL=
+OPT_LIST=
+OPT_PROFILE=base
 OPT_CONTROLLERS=2
 
 error () {
@@ -22,7 +22,7 @@ mute () {
 
 display_help () {
   cat <<EOF
-Usage: $SCRIPT_NAME [OPTIONS] <STEAM_GAME_ID> <XBOXDRV_PROFILE>
+Usage: $SCRIPT_NAME [OPTIONS] <STEAM_GAME_ID> <PROFILE>
 EOF
   exit 0
 }
@@ -48,7 +48,7 @@ load_xboxdrv () {
   check_devices
 
   local instance_count=$(pgrep -a xboxdrv | wc -l)
-  local profile=${1:-general}
+  local profile=${1:-${OPT_PROFILE}}
 
   if [[ "$instance_count" != ${OPT_CONTROLLERS} ]]; then
       for id in $(seq 2); do
@@ -60,12 +60,12 @@ load_xboxdrv () {
 }
 
 set_options () {
-  while getopts ":hklLc:" opt; do
+  while getopts ":hkp:lc:" opt; do
     case $opt in
       h) OPT_HELP=true ;;
-      k) OPT_KILL_XBOXDRV=true ;;
-      l) OPT_LOAD_XBOXDRV=true ;;
-      L) OPT_LIST_XBOXDRV=true ;;
+      k) OPT_KILL=true ;;
+      p) OPT_PROFILE=${OPTARG} ;;
+      l) OPT_LIST=true ;;
       c) OPT_CONTROLLERS=${OPTARG} ;;
       *) return 1 ;;
     esac
@@ -75,19 +75,27 @@ set_options () {
 
 }
 
+ps_xboxdrv () {
+  pgrep -a xboxdrv
+}
+
 exec_options () {
   if [[ -n "$OPT_HELP" ]]; then
       display_help
-  elif [[ -n "$OPT_KILL_XBOXDRV" ]]; then
+  fi
+
+  if [[ -n "$OPT_LIST" ]]; then
+      ps_xboxdrv
+      exit 0
+  fi
+
+  if [[ -n "$OPT_KILL" ]]; then
       kill_xboxdrv
-  elif [[ -n "$OPT_LOAD_XBOXDRV" ]]; then
+  fi
+
+  if [[ -n "$OPT_PROFILE" ]]; then
       load_xboxdrv
       exit 0
-  elif [[ -n "$OPT_LIST_XBOXDRV" ]]; then
-      pgrep -a xboxdrv
-      exit 0
-  else
-    return 0
   fi
 }
 
