@@ -3,7 +3,7 @@ set -eu
 set -o pipefail
 
 SCRIPT_NAME=`basename $0`
-XBOXDRV_DIR=$HOME/home/etc/xboxdrv
+CONF_DIR=$HOME/.xboxdrv
 STEAM_EXE="$HOME/.wine/drive_c/Program Files/Steam/Steam.exe"
 
 OPT_HELP=
@@ -61,7 +61,7 @@ load_profile () {
   for id in $(seq $count); do
     mute sudo xboxdrv --id $((id-1)) \
          --type xbox360 \
-         -c $XBOXDRV_DIR/${profile}_${id}.xboxdrv &
+         -c $CONF_DIR/${profile}_${id}.xboxdrv &
   done
 }
 
@@ -94,7 +94,7 @@ check_steam () {
   if [[ -f "$STEAM_EXE" ]]; then
       return 0
   else
-    error "Please install Windows Steam, then re-run this program."
+    error "Please install the Steam Windows client, then re-run this program."
   fi
 }
 
@@ -103,8 +103,8 @@ check_programs () {
 }
 
 check_config () {
-  if [[ ! -d $XBOXDRV_DIR ]]; then
-      error "Please create an $XBOXDRV_DIR, then re-run this program."
+  if [[ ! -d $CONF_DIR ]]; then
+      error "Please create an $CONF_DIR, then re-run this program."
   fi
 }
 
