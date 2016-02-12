@@ -135,13 +135,10 @@ flexibility since most PC games use the keyboard as base device.
 
 ## Infrequently Asked Questions (IAQ)
 
-1. Why Wine?
+1. _Why Wine?_ At the time of writing, the native Linux verion of the
+Steam client, and the games played with it have a horrible performance
+on my system.
 
-At the time of writing, the native Linux verion of the Steam client,
-and the games played with it have a horrible performance on my
-system.
-
-2. What's Xboxdrv
-
-[xboxdrv](https://github.com/xboxdrv/xboxdrv) is a userpsace
-Xbox/Xbox360 gamepad driver.
+2. _What's xboxdrv?_ [xboxdrv](https://github.com/xboxdrv/xboxdrv) is a
+userpsace Xbox/Xbox360 gamepad driver. It lets you use your Xbox 360
+device on Linux. It works similarly to xpad, only that it's better.
