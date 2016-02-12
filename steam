@@ -9,8 +9,8 @@ STEAM_EXE="$HOME/.wine/drive_c/Program Files/Steam/Steam.exe"
 OPT_HELP=
 OPT_KILL=
 OPT_LIST=
+OPT_PROFILE_EXIT=
 OPT_PROFILE=base
-OPT_CONTROLLERS=2
 
 error () {
   echo -e "\e[0;31m\e[1merror: \e[0;0m$@" >&2
@@ -33,47 +33,37 @@ kill_xboxdrv () {
   exit $?
 }
 
-check_devices () {
-  local controller_count=$(xboxdrv -L | sed 1,2d | wc -l)
-  local controller_code=$(xboxdrv -L | egrep -q '^no controller detected$'; echo $?)
+device_count () {
+  local device_code=$(xboxdrv -L | egrep -q '^no controller detected$'; echo $?)
 
-  if [[ ${controller_count} == ${OPT_CONTROLLERS} && \
-            ${controller_code} != 0 ]]; then
-      return 0
+  if [[ "${device_code}" == 0 ]]; then
+      echo 0
   else
-    error "Please plug-in the controllers, then run this program again."
+    echo $(xboxdrv -L | sed 1,2d | wc -l)
   fi
 }
 
-load_xboxdrv () {
-  check_devices
+check_devices () {
+  local count=$(device_count)
 
-  local instance_count=$(pgrep -a xboxdrv | wc -l)
-  local profile=${1:-${OPT_PROFILE}}
-
-  if [[ "$instance_count" != ${OPT_CONTROLLERS} ]]; then
-      for id in $(seq 2); do
-        mute sudo xboxdrv --id $((id-1)) \
-             --type xbox360 \
-             -c $XBOXDRV_DIR/${profile}_${id}.xboxdrv &
-      done
+  if [[ "$count" == 0 ]]; then
+      error "Please plug-in the controllers, then re-run this program."
   fi
 }
 
-set_options () {
-  while getopts ":hkp:lc:" opt; do
-    case $opt in
-      h) OPT_HELP=true ;;
-      k) OPT_KILL=true ;;
-      p) OPT_PROFILE=${OPTARG} ;;
-      l) OPT_LIST=true ;;
-      c) OPT_CONTROLLERS=${OPTARG} ;;
-      *) return 1 ;;
-    esac
+instances () {
+  pgrep -a xboxdrv | wc -l
+}
+
+load_profile () {
+  local profile=${1:-$OPT_PROFILE}
+  local count=$(device_count)
+
+  for id in $(seq $count); do
+    mute sudo xboxdrv --id $((id-1)) \
+         --type xbox360 \
+         -c $XBOXDRV_DIR/${profile}_${id}.xboxdrv &
   done
-
-  shift $((OPTIND-1))
-
 }
 
 ps_xboxdrv () {
@@ -94,8 +84,8 @@ exec_options () {
       kill_xboxdrv
   fi
 
-  if [[ -n "$OPT_PROFILE" ]]; then
-      load_xboxdrv
+  if [[ -n "$OPT_PROFILE_EXIT" ]]; then
+      load_profile "$OPT_PROFILE_EXIT"
       exit 0
   fi
 }
@@ -104,31 +94,52 @@ check_steam () {
   if [[ -f "$STEAM_EXE" ]]; then
       return 0
   else
-    return 1
+    error "Please install Windows Steam, then re-run this program."
+  fi
+}
+
+check_programs () {
+  check_steam
+}
+
+check_config () {
+  if [[ ! -d $XBOXDRV_DIR ]]; then
+      error "Please create an $XBOXDRV_DIR, then re-run this program."
   fi
 }
 
 run_steam () {
-  WINEDEBUG=-all wine $STEAM_EXE $@
+  WINEDEBUG=-all wine "$STEAM_EXE" $@
 }
 
 launch () {
-  if [[ $# -ge 0 && $# < 3 ]]; then
-      run_steam ${1:-}
+  if [[ $# == 1 ]]; then
+      echo run_steam ${1:-}
   else
     display_help
   fi
 }
 
 main () {
-  if check_steam; then
-      set_options $@
-      exec_options
-      load_xboxdrv ${2:-}
-      launch $@
-  else
-    error "Please install Windows Steam, then re-run this program"
-  fi
+  while getopts ":hkp:P:l" opt; do
+    case $opt in
+      h) OPT_HELP=true ;;
+      k) OPT_KILL=true ;;
+      p) OPT_PROFILE_EXIT=${OPTARG} ;;
+      P) OPT_PROFILE=${OPTARG} ;;
+      l) OPT_LIST=true ;;
+      *) return 1 ;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  exec_options $@
+
+  check_programs
+  check_config
+  check_devices
+  load_profile
+  launch $@
 }
 
 main $@
