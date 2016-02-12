@@ -7,10 +7,11 @@ CONF_DIR=$HOME/.xboxdrv
 STEAM_EXE="$HOME/.wine/drive_c/Program Files/Steam/Steam.exe"
 
 OPT_HELP=
-OPT_KILL=
-OPT_LIST=
-OPT_PROFILE_EXIT=
-OPT_PROFILE=base
+OPT_KILL_DRIVER=
+OPT_LIST_PROCESSES=
+OPT_LIST_DEVICES=
+OPT_PROFILE_LOADONLY=
+OPT_PROFILE_LOAD=default
 
 error () {
   echo -e "\e[0;31m\e[1merror: \e[0;0m$@" >&2
@@ -24,6 +25,14 @@ mute () {
 display_help () {
   cat <<EOF
 Usage: $SCRIPT_NAME [OPTIONS] <STEAM_GAME_ID> <PROFILE>
+
+OPTIONS:
+-h          Display this help
+-k          Kill xboxdrv instances
+-l          List xboxdrv instances
+-L          List detected devices
+-p          Load an xboxdrv profile, then quit
+-P          Load an xboxdrv profile
 EOF
   exit 0
 }
@@ -55,7 +64,7 @@ instances () {
 }
 
 load_profile () {
-  local profile=${1:-$OPT_PROFILE}
+  local profile=${1:-$OPT_PROFILE_LOAD}
   local count=$(device_count)
 
   for id in $(seq $count); do
@@ -65,8 +74,12 @@ load_profile () {
   done
 }
 
-ps_xboxdrv () {
+list_processes () {
   pgrep -a xboxdrv
+}
+
+list_devices () {
+  xboxdrv -L
 }
 
 exec_options () {
@@ -74,19 +87,37 @@ exec_options () {
       display_help
   fi
 
-  if [[ -n "$OPT_LIST" ]]; then
-      ps_xboxdrv
+  if [[ -n "$OPT_LIST_PROCESSES" ]]; then
+      list_processes
       exit 0
   fi
 
-  if [[ -n "$OPT_KILL" ]]; then
+  if [[ -n "$OPT_LIST_DEVICES" ]]; then
+      echo list_devices
+      list_devices
+      exit 0
+  fi
+
+  if [[ -n "$OPT_KILL_DRIVER" ]]; then
       kill_xboxdrv
       exit 0
   fi
 
-  if [[ -n "$OPT_PROFILE_EXIT" ]]; then
-      load_profile "$OPT_PROFILE_EXIT"
+  if [[ -n "$OPT_PROFILE_LOADONLY" ]]; then
+      load_profile "$OPT_PROFILE_LOADONLY"
       exit 0
+  fi
+}
+
+error_install () {
+  error "Please install $@, then re-run this program."
+}
+
+check_wine () {
+  if ! mute type -P wine; then
+      error_install "wine"
+  else
+    return 0
   fi
 }
 
@@ -94,12 +125,22 @@ check_steam () {
   if [[ -f "$STEAM_EXE" ]]; then
       return 0
   else
-    error "Please install the Steam Windows client, then re-run this program."
+    error_install "the Steam Windows client"
+  fi
+}
+
+check_xboxdrv () {
+  if ! mute type -P xboxdrv; then
+      error_install "xboxdrv"
+  else
+    return 0
   fi
 }
 
 check_programs () {
+  check_wine
   check_steam
+  check_xboxdrv
 }
 
 check_config () {
@@ -121,13 +162,14 @@ launch () {
 }
 
 main () {
-  while getopts ":hkp:P:l" opt; do
+  while getopts ":hkp:P:lL" opt; do
     case $opt in
       h) OPT_HELP=true ;;
-      k) OPT_KILL=true ;;
-      p) OPT_PROFILE_EXIT=${OPTARG} ;;
-      P) OPT_PROFILE=${OPTARG} ;;
-      l) OPT_LIST=true ;;
+      k) OPT_KILL_DRIVER=true ;;
+      p) OPT_PROFILE_LOADONLY=${OPTARG} ;;
+      P) OPT_PROFILE_LOAD=${OPTARG} ;;
+      l) OPT_LIST_PROCESSES=true ;;
+      L) OPT_LIST_DEVICES=true ;;
       *) return 1 ;;
     esac
   done
