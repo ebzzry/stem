@@ -22,8 +22,6 @@ listed above. The Steam Windows client can be downloaded
 
 ## Configuration
 
-### xboxdrv
-
 Before you can use your Xbox 360 controllers, you must create xboxdrv
 configuration files in `~/.xboxdrv/`. stem, by default, will read the
 profiles `~/.xboxdrv/default_1.xboxdrv`, and
