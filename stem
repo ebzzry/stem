@@ -14,8 +14,13 @@ OPT_PROFILE_LOADONLY=
 OPT_PROFILE_LOAD=default
 
 error () {
-  echo -e "\e[0;31m\e[1merror: \e[0;0m$@" >&2
+  echo -e "\e[0;31m\e[1mError: \e[0;0m$@" >&2
   exit 1
+}
+
+warning () {
+  echo -e "\e[0;33m\e[1mWarning: \e[0;0m$@" >&2
+  return 1
 }
 
 mute () {
@@ -68,9 +73,13 @@ load_profile () {
   local count=$(device_count)
 
   for id in $(seq $count); do
-    mute sudo xboxdrv --id $((id-1)) \
-         --type xbox360 \
-         -c $CONF_DIR/${profile}_${id}.xboxdrv &
+    if [[ ! -f "$CONF_DIR/${profile}_${id}.xboxdrv" ]]; then
+        warning "The profile $CONF_DIR/${profile}_${id}.xboxdrv does not exist"
+    else
+      mute sudo xboxdrv --id $((id-1)) \
+           --type xbox360 \
+           -c $CONF_DIR/${profile}_${id}.xboxdrv &
+    fi
   done
 }
 
