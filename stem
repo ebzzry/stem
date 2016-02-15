@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -u
 set -o pipefail
 
 SCRIPT_NAME=`basename $0`
@@ -43,8 +43,7 @@ EOF
 }
 
 kill_xboxdrv () {
-  # mute sudo kill $(pgrep -a xboxdrv | awk '{print $1}')
-  sudo killall xboxdrv
+  mute sudo killall xboxdrv
 }
 
 device_count () {
