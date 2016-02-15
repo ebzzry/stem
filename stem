@@ -43,7 +43,8 @@ EOF
 }
 
 kill_xboxdrv () {
-  mute sudo kill $(pgrep -a xboxdrv | awk '{print $1}')
+  # mute sudo kill $(pgrep -a xboxdrv | awk '{print $1}')
+  sudo killall xboxdrv
 }
 
 device_count () {
@@ -71,6 +72,8 @@ instances () {
 load_profile () {
   local profile=${1:-$OPT_PROFILE_LOAD}
   local count=$(device_count)
+
+  kill_xboxdrv
 
   for id in $(seq $count); do
     if [[ ! -f "$CONF_DIR/${profile}_${id}.xboxdrv" ]]; then
