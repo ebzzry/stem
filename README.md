@@ -1,9 +1,11 @@
 stem
 ====
 
-stem is a steam application launcher that run the Steam Windows client
-via Wine, and it provides userland Xbox 360 controller support via
-xboxdrv.
+stem is a [Steam](http://store.steampowered.com/) application launcher
+that run the Steam Windows client via
+[Wine](http://www.winehq.org/). It also provides userland Xbox 360
+controller support via
+[xboxdrv](http://pingus.seul.org/~grumbel/xboxdrv/).
 
 
 ## Installation
@@ -30,7 +32,7 @@ respectively. Additional profiles can also be created. The `examples/`
 directory that comes with this repo contains example default profiles,
 for two players.
 
-The mappings contained in `default_1.xboxdrv` and `default_2.xboxdrv` is:
+The mappings contained in `default_1.xboxdrv` and `default_2.xboxdrv` are:
 
 ```
 # Player 1
@@ -40,18 +42,17 @@ Down = Down
 Left = Left
 Right = Right
 
-B = j
-X = k
-Y = l
-LB = semicolon
+B = a
+X = b
+Y = c
+A = d
+LT = e
+RT = f
+LB = g
+RB = h
 
-A = m
-LT = comma
-RT = period
-RB = slash
-
-Start = Enter
-Select = Space
+Select = Escape
+Start = Return
 
 
 # Player 2
@@ -64,16 +65,14 @@ Right = D
 B = 1
 X = 2
 Y = 3
-LB = 7
-
 A = 4
 LT = 5
 RT = 6
+LB = 7
 RB = 8
 
-Start = 9
-Select = 0
-
+Select = 9
+Start = 0
 ```
 
 You may choose to set the corresponding keys for your game, from the
