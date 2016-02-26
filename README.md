@@ -1,7 +1,7 @@
 stem
 ====
 
-stem is a [Steam](http://store.steampowered.com/) application launcher
+_stem_ is a [Steam](http://store.steampowered.com/) application launcher
 that run the Steam Windows client via
 [Wine](http://www.winehq.org/). It also provides userland Xbox 360
 controller support via
