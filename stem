@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -u
 set -o pipefail
 
@@ -36,13 +37,13 @@ OPTIONS:
 -k          Kill xboxdrv instances
 -l          List xboxdrv instances
 -L          List detected devices
--p          Load an xboxdrv profile, then quit
--P          Load an xboxdrv profile
+-x          Load an xboxdrv profile, then quit
+-X          Load an xboxdrv profile, then load game
 EOF
   exit 0
 }
 
-kill_xboxdrv () {
+kill_driver () {
   mute sudo killall xboxdrv
 }
 
@@ -64,15 +65,23 @@ check_devices () {
   fi
 }
 
-instances () {
-  pgrep -a xboxdrv | wc -l
+count_driver_instances () {
+  list_processes | wc -l
 }
 
-load_profile () {
+loaded_driver () {
+  if [[ "$(count_driver_instances)" == 0 ]]; then
+      return 1
+  else
+    return 0
+  fi
+}
+
+load_driver () {
   local profile=${1:-$OPT_PROFILE_LOAD}
   local count=$(device_count)
 
-  kill_xboxdrv
+  kill_driver
 
   for id in $(seq $count); do
     if [[ ! -f "$CONF_DIR/${profile}_${id}.xboxdrv" ]]; then
@@ -109,12 +118,12 @@ exec_options () {
   fi
 
   if [[ -n "$OPT_KILL_DRIVER" ]]; then
-      kill_xboxdrv
+      kill_driver
       exit 0
   fi
 
   if [[ -n "$OPT_PROFILE_LOADONLY" ]]; then
-      load_profile "$OPT_PROFILE_LOADONLY"
+      load_driver "$OPT_PROFILE_LOADONLY"
       exit 0
   fi
 }
@@ -139,7 +148,7 @@ check_steam () {
   fi
 }
 
-check_xboxdrv () {
+check_driver () {
   if ! mute type -P xboxdrv; then
       error_install "xboxdrv"
   else
@@ -150,7 +159,7 @@ check_xboxdrv () {
 check_programs () {
   check_wine
   check_steam
-  check_xboxdrv
+  check_driver
 }
 
 check_config () {
@@ -172,12 +181,12 @@ launch () {
 }
 
 main () {
-  while getopts ":hkp:P:lL" opt; do
+  while getopts ":hkx:X:lL" opt; do
     case $opt in
       h) OPT_HELP=true ;;
       k) OPT_KILL_DRIVER=true ;;
-      p) OPT_PROFILE_LOADONLY=${OPTARG} ;;
-      P) OPT_PROFILE_LOAD=${OPTARG} ;;
+      x) OPT_PROFILE_LOADONLY=${OPTARG} ;;
+      X) OPT_PROFILE_LOAD=${OPTARG} ;;
       l) OPT_LIST_PROCESSES=true ;;
       L) OPT_LIST_DEVICES=true ;;
       *) return 1 ;;
@@ -189,7 +198,9 @@ main () {
   check_programs
   check_config
   check_devices
-  load_profile
+
+  if ! loaded_driver; then load_driver; fi
+
   launch $@
 }
 
