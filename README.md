@@ -2,7 +2,7 @@ stem
 ====
 
 _stem_ is a [Steam](http://store.steampowered.com/) application launcher
-that run the Steam Windows client via
+that runs the Steam Windows client via
 [Wine](http://www.winehq.org/). It also provides userland Xbox 360
 controller support via
 [xboxdrv](http://pingus.seul.org/~grumbel/xboxdrv/).
@@ -98,7 +98,7 @@ has bindings where the default profile isn't suited):
 
 
 ```
-$ stem -P foobar steam://rungameid/12345
+$ stem -X foobar steam://rungameid/12345
 ```
 
 To kill xboxdrv processes:
