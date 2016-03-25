@@ -5,7 +5,8 @@ set -o pipefail
 
 SCRIPT_NAME=`basename $0`
 CONF_DIR=$HOME/.xboxdrv
-STEAM_EXE="$HOME/.wine/drive_c/Program Files/Steam/Steam.exe"
+STEAM_DIR="$HOME/.wine/drive_c/Program Files"
+STEAM_EXE="$STEAM_DIR/Steam/Steam.exe"
 
 OPT_HELP=
 OPT_KILL_DRIVER=
@@ -144,7 +145,7 @@ check_steam () {
   if [[ -f "$STEAM_EXE" ]]; then
       return 0
   else
-    error_install "the Steam Windows client"
+    error_install "the Steam Windows client to $STEAM_DIR/"
   fi
 }
 
