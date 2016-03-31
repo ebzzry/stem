@@ -32,16 +32,16 @@ mute () {
 
 display_help () {
   cat <<EOF
-Usage: $SCRIPT_NAME [OPTIONS] <STEAM_GAME_ID> <PROFILE>
+Usage: $SCRIPT_NAME [OPTIONS] <STEAM_APP_ID>
 
 OPTIONS:
--h          Display this help
--k          Kill xboxdrv instances
--p          List xboxdrv profiles
--l          List xboxdrv instances
--L          List detected devices
--x          Load an xboxdrv profile, then quit
--X          Load an xboxdrv profile, then load game
+-h              Display this help
+-k              Kill xboxdrv instances
+-p              List xboxdrv profiles
+-l              List xboxdrv instances
+-L              List detected devices
+-x <profile>    Load an xboxdrv profile, then quit
+-X <profile>    Load an xboxdrv profile, then load game
 EOF
   exit 0
 }
