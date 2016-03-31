@@ -10,6 +10,7 @@ STEAM_EXE="$STEAM_DIR/Steam/Steam.exe"
 
 OPT_HELP=
 OPT_KILL_DRIVER=
+OPT_LIST_PROFILES=
 OPT_LIST_PROCESSES=
 OPT_LIST_DEVICES=
 OPT_PROFILE_LOADONLY=
@@ -36,6 +37,7 @@ Usage: $SCRIPT_NAME [OPTIONS] <STEAM_GAME_ID> <PROFILE>
 OPTIONS:
 -h          Display this help
 -k          Kill xboxdrv instances
+-p          List xboxdrv profiles
 -l          List xboxdrv instances
 -L          List detected devices
 -x          Load an xboxdrv profile, then quit
@@ -103,9 +105,20 @@ list_devices () {
   xboxdrv -L
 }
 
+list_profiles () {
+  if [[ -e $CONF_DIR ]]; then
+      ls $CONF_DIR | sed -e 's/_.*//' | egrep -v '*.txt' | uniq
+  fi
+}
+
 exec_options () {
   if [[ -n "$OPT_HELP" ]]; then
       display_help
+  fi
+
+  if [[ -n "$OPT_LIST_PROFILES" ]]; then
+      list_profiles
+      exit 0
   fi
 
   if [[ -n "$OPT_LIST_PROCESSES" ]]; then
@@ -182,10 +195,11 @@ launch () {
 }
 
 main () {
-  while getopts ":hkx:X:lL" opt; do
+  while getopts ":hkpx:X:lL" opt; do
     case $opt in
       h) OPT_HELP=true ;;
       k) OPT_KILL_DRIVER=true ;;
+      p) OPT_LIST_PROFILES=true ;;
       x) OPT_PROFILE_LOADONLY=${OPTARG} ;;
       X) OPT_PROFILE_LOAD=${OPTARG} ;;
       l) OPT_LIST_PROCESSES=true ;;
