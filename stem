@@ -4,7 +4,7 @@ set -u
 set -o pipefail
 
 SCRIPT_NAME=`basename $0`
-CONF_DIR=$HOME/.xboxdrv
+CONF_DIR=$HOME/.stem
 STEAM_DIR="$HOME/.wine/drive_c/Program Files"
 STEAM_EXE="$STEAM_DIR/Steam/Steam.exe"
 
