@@ -10,11 +10,12 @@ STEAM_EXE="$STEAM_DIR/Steam/Steam.exe"
 
 OPT_HELP=
 OPT_KILL_DRIVER=
+OPT_DRIVER_CONDITIONAL=
 OPT_LIST_PROFILES=
-OPT_LIST_PROCESSES=
-OPT_LIST_DEVICES=
 OPT_PROFILE_LOADONLY=
 OPT_PROFILE_LOAD=default
+OPT_LIST_PROCESSES=
+OPT_LIST_DEVICES=
 
 error () {
   echo -e "\e[0;31m\e[1mError: \e[0;0m$@" >&2
@@ -40,6 +41,7 @@ OPTIONS:
 -p              List xboxdrv profiles
 -l              List xboxdrv instances
 -L              List detected devices
+-c              Load an xboxdrv profile, only if none is loaded
 -x <profile>    Load an xboxdrv profile, then quit
 -X <profile>    Load an xboxdrv profile, then load game
 EOF
@@ -95,6 +97,14 @@ load_driver () {
            -c $CONF_DIR/${profile}_${id}.xboxdrv &
     fi
   done
+}
+
+load_drivers () {
+  if [[ -n "$OPT_DRIVER_CONDITIONAL" ]]; then
+      if ! loaded_driver; then load_driver; fi
+  else
+    load_driver
+  fi
 }
 
 list_processes () {
@@ -195,10 +205,11 @@ launch () {
 }
 
 main () {
-  while getopts ":hkpx:X:lL" opt; do
+  while getopts ":hkcpx:X:lL" opt; do
     case $opt in
       h) OPT_HELP=true ;;
       k) OPT_KILL_DRIVER=true ;;
+      c) OPT_DRIVER_CONDITIONAL=true ;;
       p) OPT_LIST_PROFILES=true ;;
       x) OPT_PROFILE_LOADONLY=${OPTARG} ;;
       X) OPT_PROFILE_LOAD=${OPTARG} ;;
@@ -213,9 +224,7 @@ main () {
   check_programs
   check_config
   check_devices
-
-  if ! loaded_driver; then load_driver; fi
-
+  load_drivers
   launch $@
 }
 
