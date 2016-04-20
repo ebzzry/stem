@@ -17,8 +17,8 @@ a=XK_d
 lt=XK_e
 rt=XK_f
 lb=XK_g
-rb=XK_h
+rb=XK_Pause
 
 [ui-buttonmap]
-select=XK_Escape
-start=XK_Return
+select=XK_i
+start=XK_j

@@ -20,5 +20,5 @@ lb=XK_g
 rb=XK_h
 
 [ui-buttonmap]
-select=XK_Escape
-start=XK_Return
+select=XK_i
+start=XK_j

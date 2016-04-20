@@ -10,15 +10,15 @@ dl=XK_Left
 dr=XK_Right
 
 [ui-buttonmap]
-b=XK_a
-x=XK_b
-y=XK_c
-a=XK_d
-lt=XK_e
-rt=XK_f
-lb=XK_g
-rb=XK_h
+b=XK_1
+x=XK_2
+y=XK_3
+a=XK_4
+lt=XK_5
+rt=XK_6
+lb=XK_7
+rb=XK_8
 
 [ui-buttonmap]
-select=XK_Escape
+select=XK_space
 start=XK_Return

@@ -9,16 +9,18 @@ dd=XK_Next
 dl=XK_Home
 dr=XK_End
 
-[ui-buttonmap]
-b=XK_1
-x=XK_2
-y=XK_3
-a=XK_4
-lt=XK_5
-rt=XK_6
-lb=XK_7
-rb=XK_8
+# p m g
 
 [ui-buttonmap]
-select=XK_9
-start=XK_0
+b=XK_r
+x=XK_q
+y=XK_o
+a=XK_n
+lt=XK_l
+rt=XK_k
+lb=XK_j
+rb=XK_i
+
+[ui-buttonmap]
+select=XK_h
+start=XK_f

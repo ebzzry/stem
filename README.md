@@ -25,9 +25,9 @@ listed above. The Steam Windows client can be downloaded
 ## Configuration
 
 Before you can use your Xbox 360 controllers, you must create xboxdrv
-configuration files in `~/.xboxdrv/`. stem, by default, will read the
-profiles `~/.xboxdrv/default_1.xboxdrv`, and
-`~/.xboxdrv/default_2.xboxdrv`, for players one and two,
+configuration files in `~/.stem/`. stem, by default, will read the
+profiles `~/.stem/default_1.xboxdrv`, and
+`~/.stem/default_2.xboxdrv`, for players one and two,
 respectively. Additional profiles can also be created. The `examples/`
 directory that comes with this repo contains example default profiles,
 for two players.

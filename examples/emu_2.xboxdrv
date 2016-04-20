@@ -17,7 +17,7 @@ a=XK_4
 lt=XK_5
 rt=XK_6
 lb=XK_7
-rb=XK_8
+rb=XK_Pause
 
 [ui-buttonmap]
 select=XK_9

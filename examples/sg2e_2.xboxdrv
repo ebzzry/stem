@@ -4,10 +4,10 @@ trigger-as-button=true
 ui-clear=true
 
 [ui-buttonmap]
-du=XK_Up
-dd=XK_Down
-dl=XK_Left
-dr=XK_Right
+du=XK_k
+dd=XK_j
+dl=XK_h
+dr=XK_l
 
 [ui-buttonmap]
 b=XK_a
@@ -17,8 +17,8 @@ a=XK_d
 lt=XK_e
 rt=XK_f
 lb=XK_g
-rb=XK_h
+rb=XK_i
 
 [ui-buttonmap]
-select=XK_Escape
-start=XK_Return
+select=XK_m
+start=XK_n
