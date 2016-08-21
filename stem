@@ -7,6 +7,7 @@ SCRIPT_NAME=`basename $0`
 CONF_DIR=$HOME/.stem
 STEAM_DIR="$HOME/.wine/drive_c/Program Files"
 STEAM_EXE="$STEAM_DIR/Steam/Steam.exe"
+VERSION="0.0.1"
 
 OPT_HELP=
 OPT_KILL_DRIVER=
@@ -16,6 +17,7 @@ OPT_PROFILE_LOADONLY=
 OPT_PROFILE_LOAD=default
 OPT_LIST_PROCESSES=
 OPT_LIST_DEVICES=
+OPT_STANDALONE=
 
 error () {
   echo -e "\e[0;31m\e[1mError: \e[0;0m$@" >&2
@@ -44,6 +46,7 @@ OPTIONS:
 -c              Load an xboxdrv profile, only if none is loaded
 -x <profile>    Load an xboxdrv profile, then quit
 -X <profile>    Load an xboxdrv profile, then load game
+-s              Run standalone Wine
 EOF
   exit 0
 }
@@ -63,10 +66,14 @@ device_count () {
 }
 
 check_devices () {
-  local count=$(device_count)
+  local count=
 
-  if [[ "$count" == 0 ]]; then
-      error "Please plug-in the controllers, then re-run this program."
+  if [[ -z "$OPT_STANDALONE" ]]; then
+      count=$(device_count)
+
+      if [[ "$count" == 0 ]]; then
+          error "Please plug-in the controllers, then re-run this program."
+      fi
   fi
 }
 
@@ -86,17 +93,19 @@ load_driver () {
   local profile=${1:-$OPT_PROFILE_LOAD}
   local count=$(device_count)
 
-  kill_driver
+  if [[ -z "$OPT_STANDALONE" ]]; then
+      kill_driver
 
-  for id in $(seq $count); do
-    if [[ ! -f "$CONF_DIR/${profile}_${id}.xboxdrv" ]]; then
-        warning "The profile $CONF_DIR/${profile}_${id}.xboxdrv does not exist"
-    else
-      mute sudo xboxdrv --id $((id-1)) \
-           --type xbox360 \
-           -c $CONF_DIR/${profile}_${id}.xboxdrv &
-    fi
-  done
+      for id in $(seq $count); do
+        if [[ ! -f "$CONF_DIR/${profile}_${id}.xboxdrv" ]]; then
+            warning "The profile $CONF_DIR/${profile}_${id}.xboxdrv does not exist"
+        else
+          mute sudo xboxdrv --id $((id-1)) \
+               --type xbox360 \
+               -c $CONF_DIR/${profile}_${id}.xboxdrv &
+        fi
+      done
+  fi
 }
 
 load_drivers () {
@@ -122,34 +131,12 @@ list_profiles () {
 }
 
 exec_options () {
-  if [[ -n "$OPT_HELP" ]]; then
-      display_help
-  fi
-
-  if [[ -n "$OPT_LIST_PROFILES" ]]; then
-      list_profiles
-      exit 0
-  fi
-
-  if [[ -n "$OPT_LIST_PROCESSES" ]]; then
-      list_processes
-      exit 0
-  fi
-
-  if [[ -n "$OPT_LIST_DEVICES" ]]; then
-      list_devices
-      exit 0
-  fi
-
-  if [[ -n "$OPT_KILL_DRIVER" ]]; then
-      kill_driver
-      exit 0
-  fi
-
-  if [[ -n "$OPT_PROFILE_LOADONLY" ]]; then
-      load_driver "$OPT_PROFILE_LOADONLY"
-      exit 0
-  fi
+  if [[ -n "$OPT_HELP" ]]; then display_help; fi
+  if [[ -n "$OPT_LIST_PROFILES" ]]; then list_profiles; exit 0; fi
+  if [[ -n "$OPT_LIST_PROCESSES" ]]; then list_processes; exit 0; fi
+  if [[ -n "$OPT_LIST_DEVICES" ]]; then list_devices; exit 0; fi
+  if [[ -n "$OPT_KILL_DRIVER" ]]; then kill_driver; exit 0; fi
+  if [[ -n "$OPT_PROFILE_LOADONLY" ]]; then load_driver "$OPT_PROFILE_LOADONLY"; exit 0; fi
 }
 
 error_install () {
@@ -173,8 +160,12 @@ check_steam () {
 }
 
 check_driver () {
-  if ! mute type -P xboxdrv; then
-      error_install "xboxdrv"
+  if [[ -z "$OPT_STANDALONE" ]]; then
+      if ! mute type -P xboxdrv; then
+          error_install "xboxdrv"
+      else
+        return 0
+      fi
   else
     return 0
   fi
@@ -205,7 +196,7 @@ launch () {
 }
 
 main () {
-  while getopts ":hkcpx:X:lL" opt; do
+  while getopts ":hkcpx:X:lLs" opt; do
     case $opt in
       h) OPT_HELP=true ;;
       k) OPT_KILL_DRIVER=true ;;
@@ -215,6 +206,7 @@ main () {
       X) OPT_PROFILE_LOAD=${OPTARG} ;;
       l) OPT_LIST_PROCESSES=true ;;
       L) OPT_LIST_DEVICES=true ;;
+      s) OPT_STANDALONE=true ;;
       *) return 1 ;;
     esac
   done
