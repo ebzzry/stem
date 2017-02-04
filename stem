@@ -46,9 +46,17 @@ OPTIONS:
 -c              Load an xboxdrv profile, only if none is loaded
 -x <profile>    Load an xboxdrv profile, then quit
 -X <profile>    Load an xboxdrv profile, then load game
--s              Run standalone Wine
+-s              Run standalone Steam
 EOF
   exit 0
+}
+
+check_privileges () {
+  if [[ "$(id -u)" != 0 ]]; then
+      error "This program must be ran as root."
+  else
+    return 0
+  fi
 }
 
 kill_driver () {
@@ -100,8 +108,7 @@ load_driver () {
         if [[ ! -f "$CONF_DIR/${profile}_${id}.xboxdrv" ]]; then
             warning "The profile $CONF_DIR/${profile}_${id}.xboxdrv does not exist"
         else
-          mute sudo xboxdrv --id $((id-1)) \
-               --type xbox360 \
+          mute sudo xboxdrv --id $((id-1)) --type xbox360 \
                -c $CONF_DIR/${profile}_${id}.xboxdrv &
         fi
       done
@@ -212,6 +219,7 @@ main () {
   done
   shift $((OPTIND-1))
 
+  #check_privileges
   exec_options $@
   check_programs
   check_config
