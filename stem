@@ -1,23 +1,27 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p bash getopt coreutils gawk gnused gnugrep procps psmisc xboxdrv steam
 
 set -u
 set -o pipefail
 
-SCRIPT_NAME=`basename $0`
-CONF_DIR=$HOME/.stem
-STEAM_DIR="$HOME/.wine/drive_c/Program Files"
-STEAM_EXE="$STEAM_DIR/Steam/Steam.exe"
-VERSION="0.0.1"
+readonly SELF=$(basename "${BASH_SOURCE[0]}")
+readonly CONF_DIR=$HOME/.stem
+readonly WINE_STEAM_DIR="$HOME/.wine/drive_c/Program Files"
+readonly WINE_STEAM_EXE="$WINE_STEAM_DIR/Steam/Steam.exe"
+readonly VERSION="0.0.2"
 
 OPT_HELP=
+OPT_DEBUG=
+OPT_VERBOSE=
 OPT_KILL_DRIVER=
 OPT_DRIVER_CONDITIONAL=
-OPT_LIST_PROFILES=
 OPT_PROFILE_LOADONLY=
-OPT_PROFILE_LOAD=default
+OPT_PROFILE_LOADPLAY=default
+OPT_LIST_PROFILES=
 OPT_LIST_PROCESSES=
 OPT_LIST_DEVICES=
 OPT_STANDALONE=
+OPT_WINE=
 
 error () {
   echo -e "\e[0;31m\e[1mError: \e[0;0m$@" >&2
@@ -33,20 +37,77 @@ mute () {
   $@ > /dev/null 2>&1
 }
 
-display_help () {
+debug () {
+  if [[ -n "$OPT_DEBUG" ]]; then
+      echo '**'
+      echo \$@: $@
+      echo \$OPT_HELP: "$OPT_HELP"
+      echo \$OPT_DEBUG: "$OPT_DEBUG"
+      echo \$OPT_VERBOSE: "$OPT_VERBOSE"
+  fi
+}
+
+parse_arguments () {
+  debug parse_arguments "$@"
+
+  local opts=$(getopt -n "$SELF" --options hdvkcx:X:plLsw \
+                      --longoptions help,debug,verbose,kill,conditional,load-only:,load-play:,list-profiles,list-processes,list-devices,standalone,wine -- "$@")
+
+  if [[ $? != 0 ]]; then error "failed to parse arguments."; fi
+
+  eval set -- "$opts"
+
+  while true; do
+    case "$1" in
+      (-h|--help) OPT_HELP=true; shift ;;
+      (-d|--debug) OPT_DEBUG=true; shift ;;
+      (-v|--verbose) OPT_VERBOSE=true; shift ;;
+      (-k|--kill) OPT_KILL_DRIVER=true; shift ;;
+      (-c|--conditional) OPT_DRIVER_CONDITIONAL=true; shift ;;
+      (-x|--load-only) OPT_PROFILE_LOADONLY=$2; shift 2 ;;
+      (-X|--load-play) OPT_PROFILE_LOADPLAY=$2; shift 2 ;;
+      (-p|--list-profiles) OPT_LIST_PROFILES=true; shift ;;
+      (-l|--list-processes) OPT_LIST_PROCESSES=true; shift ;;
+      (-L|--list-devices) OPT_LIST_DEVICES=true; shift ;;
+      (-s|--standalone) OPT_STANDALONE=ture; shift ;;
+      (-w|--wine) OPT_WINE=true; shift ;;
+      (--) shift; break ;;
+      (*) break ;;
+    esac
+  done
+}
+
+process_arguments () {
+  debug process_arguments "$@"
+
+  if [[ -n "$OPT_HELP" || "$#" -lt 1 ]]; then
+      display_usage
+  else
+    return 0
+  fi
+}
+
+display_usage () {
   cat <<EOF
-Usage: $SCRIPT_NAME [OPTIONS] <STEAM_APP_ID>
+$SELF $VERSION: a Steam game launcher with Xbox controller support
+
+USAGE: $SELF [OPTIONS] <STEAM_APP_ID>
 
 OPTIONS:
--h              Display this help
--k              Kill xboxdrv instances
--p              List xboxdrv profiles
--l              List xboxdrv instances
--L              List detected devices
--c              Load an xboxdrv profile, only if none is loaded
--x <profile>    Load an xboxdrv profile, then quit
--X <profile>    Load an xboxdrv profile, then load game
--s              Run standalone Steam
+-h, --help                Display this help
+-d, --debug               Display debugging messages
+-v, --verbose             Enable verbose output
+-k, --kill                Kill xboxdrv instances
+-c, --conditional         Load an xboxdrv profile, only if none is loaded
+-x, --load-only <profile> Load an xboxdrv profile, then quit
+-X, --load <profile>      Load an xboxdrv profile, then load game
+-p, --list-profiles       List xboxdrv profiles
+-l, --list-processes      List xboxdrv instances
+-L, --list-devices        List detected devices
+-s, --standalone          Run standalone Steam
+-w, --wine                Use Wine to launch Steam
+
+Visit https://github.com/ebzzry/stem for more information
 EOF
   exit 0
 }
@@ -98,7 +159,7 @@ loaded_driver () {
 }
 
 load_driver () {
-  local profile=${1:-$OPT_PROFILE_LOAD}
+  local profile=${1:-$OPT_PROFILE_LOADPLAY}
   local count=$(device_count)
 
   if [[ -z "$OPT_STANDALONE" ]]; then
@@ -138,7 +199,7 @@ list_profiles () {
 }
 
 exec_options () {
-  if [[ -n "$OPT_HELP" ]]; then display_help; fi
+  if [[ -n "$OPT_HELP" ]]; then display_usage; fi
   if [[ -n "$OPT_LIST_PROFILES" ]]; then list_profiles; exit 0; fi
   if [[ -n "$OPT_LIST_PROCESSES" ]]; then list_processes; exit 0; fi
   if [[ -n "$OPT_LIST_DEVICES" ]]; then list_devices; exit 0; fi
@@ -158,11 +219,11 @@ check_wine () {
   fi
 }
 
-check_steam () {
-  if [[ -f "$STEAM_EXE" ]]; then
+check_windows_steam () {
+  if [[ -f "$WINE_STEAM_EXE" ]]; then
       return 0
   else
-    error_install "the Steam Windows client to $STEAM_DIR/"
+    error_install "the Steam Windows client to $WINE_STEAM_DIR/"
   fi
 }
 
@@ -179,46 +240,40 @@ check_driver () {
 }
 
 check_programs () {
-  check_wine
-  check_steam
+  if [[ -n "$OPT_WINE" ]]; then
+      check_wine
+      check_windows_steam
+  fi
+
   check_driver
 }
 
 check_config () {
   if [[ ! -d $CONF_DIR ]]; then
-      error "Please create an $CONF_DIR, then re-run this program."
+      error "Please create $CONF_DIR, then re-run this program."
   fi
 }
 
 run_steam () {
-  WINEDEBUG=-all wine "$STEAM_EXE" $@
+  if [[ -n "$OPT_WINE" ]]; then
+      WINEDEBUG=-all wine "$WINE_STEAM_EXE" $@
+  else
+    steam $@
+  fi
 }
 
 launch () {
   if [[ $# == 0 || $# == 1 ]]; then
      run_steam ${1:-}
   else
-    display_help
+    display_usage
   fi
 }
 
 main () {
-  while getopts ":hkcpx:X:lLs" opt; do
-    case $opt in
-      h) OPT_HELP=true ;;
-      k) OPT_KILL_DRIVER=true ;;
-      c) OPT_DRIVER_CONDITIONAL=true ;;
-      p) OPT_LIST_PROFILES=true ;;
-      x) OPT_PROFILE_LOADONLY=${OPTARG} ;;
-      X) OPT_PROFILE_LOAD=${OPTARG} ;;
-      l) OPT_LIST_PROCESSES=true ;;
-      L) OPT_LIST_DEVICES=true ;;
-      s) OPT_STANDALONE=true ;;
-      *) return 1 ;;
-    esac
-  done
-  shift $((OPTIND-1))
-
+  debug main "$@"
+  parse_arguments "$@"
+  process_arguments "$@"
   #check_privileges
   exec_options $@
   check_programs
