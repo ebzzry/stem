@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i bash -p bash getopt coreutils gawk gnused gnugrep procps psmisc xboxdrv steam
+#!/usr/bin/env bash
 
 set -u
 set -o pipefail
@@ -89,7 +88,7 @@ process_arguments () {
 
 display_usage () {
   cat <<EOF
-$SELF $VERSION: a Steam game launcher with Xbox controller support
+$SELF $VERSION: a Steam application launcher with Xbox controller support
 
 USAGE: $SELF [OPTIONS] <STEAM_APP_ID>
 
