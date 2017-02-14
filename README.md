@@ -234,14 +234,3 @@ Then, rebuild:
 ```
 # nixos-rebuild switch
 ```
-
-
-## Infrequently Asked Questions (IAQ)
-
-1. _Why Wine?_ At the time of writing, the native Linux verion of the
-Steam client, and the games played with it have a horrible performance
-on my system.
-
-2. _What's xboxdrv?_ [xboxdrv](https://github.com/xboxdrv/xboxdrv) is a
-userpsace Xbox/Xbox360 gamepad driver. It lets you use your Xbox 360
-device on Linux. It works similarly to xpad, only that it's better.
