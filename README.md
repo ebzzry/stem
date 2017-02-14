@@ -99,7 +99,7 @@ keyboard first, prior to running stem and using your joystick.
 
 ## Usage
 
-To launch the Steam Windows client only:
+To launch the Steam client only:
 
 ```
 $ stem
@@ -210,7 +210,7 @@ Then, rebuild:
 
 ## Additional configuration
 
-You may need to blacklist the `xpad` driver, to make xboxdrv work. 
+You may need to blacklist the `xpad` driver, to make xboxdrv work.
 
 
 ### Ubuntu, Fedora, etc.
