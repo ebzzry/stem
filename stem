@@ -21,6 +21,7 @@ OPT_LIST_PROCESSES=
 OPT_LIST_DEVICES=
 OPT_STANDALONE=
 OPT_WINE=
+OPT_ID=
 
 error () {
   echo -e "\e[0;31m\e[1mError: \e[0;0m$@" >&2
@@ -52,7 +53,7 @@ parse_arguments () {
   local opts=$(getopt -n "$SELF" --options hdvkcx:X:plLsw \
                       --longoptions help,debug,verbose,kill,conditional,load-only:,load-play:,list-profiles,list-processes,list-devices,standalone,wine -- "$@")
 
-  if [[ $? != 0 ]]; then error "failed to parse arguments."; fi
+  [[ $? != 0 ]] && error "failed to parse arguments."
 
   eval set -- "$opts"
 
@@ -74,6 +75,8 @@ parse_arguments () {
       (*) break ;;
     esac
   done
+
+  OPT_ID=${@:-1}
 }
 
 process_arguments () {
@@ -262,8 +265,9 @@ run_steam () {
 }
 
 launch () {
-  if [[ $# == 0 || $# == 1 ]]; then
-     run_steam ${1:-}
+  if [[ $# -ge 0 && -n "$OPT_ID" ]]; then
+      #run_steam "$OPT_ID"
+      run_steam $@
   else
     display_usage
   fi
