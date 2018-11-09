@@ -260,7 +260,7 @@ run_steam () {
   if [[ -n "$OPT_WINE" ]]; then
       WINEDEBUG=-all wine "$WINE_STEAM_EXE" $@
   else
-    steam $@
+    steam -nochatui -nofriendsui $@
   fi
 }
 
