@@ -1,29 +1,34 @@
 stem
 ====
 
-_stem_ is a [Steam](http://store.steampowered.com/) application launcher
-that runs the Steam Windows client via
-[Wine](http://www.winehq.org/). It also provides userland Xbox 360
-controller support via
+
+Overview
+--------
+
+_stem_ is a [Steam](http://store.steampowered.com/) application launcher that
+runs the Steam Windows client via [Wine](http://www.winehq.org/). It also
+provides userland Xbox 360 controller support via
 [xboxdrv](http://pingus.seul.org/~grumbel/xboxdrv/).
 
 
-## Installation
+Installation
+------------
 
 Before you can use stem, the following programs must first be
 installed:
 
-* wine
-* xboxdrv
-* sudo
-* Steam Windows client in `~/.wine/drive_c/Program\ Files/Steam`
+- wine
+- xboxdrv
+- sudo
+- Steam Windows client in `~/.wine/drive_c/Program\ Files/Steam/`
 
 Please consult your package manager on how to install the programs
 listed above. The Steam Windows client can be downloaded
 [here](http://store.steampowered.com/about/).
 
 
-## Configuration
+Configuration
+-------------
 
 Before you can use your Xbox 360 controllers, you must create xboxdrv
 configuration files in `~/.stem/`. stem, by default, will read the
@@ -33,9 +38,7 @@ created. The `examples/` directory that comes with this repo contains
 example default profiles, for two players. To install these profiles
 to your home, run:
 
-```
-$ cp -a examples ~/.stem
-```
+    $ cp -a examples ~/.stem
 
 The mappings contained in `default_1.xboxdrv` and `default_2.xboxdrv` are:
 
@@ -97,19 +100,16 @@ You may choose to set the corresponding keys for your game, from the
 keyboard first, prior to running stem and using your joystick.
 
 
-## Usage
+Usage
+-----
 
 To launch the Steam client only:
 
-```
-$ stem
-```
+    $ stem -s
 
-To launch a specific application or game:
+To launch a specific application or game with controller support:
 
-```
-$ stem steam://rungameid/12345
-```
+    $ stem -- -applaunch 245170
 
 To use a specific xboxdrv profile—this is handy when a specific game
 has bindings where the default profile isn't suited. The argument to
@@ -117,43 +117,31 @@ has bindings where the default profile isn't suited. The argument to
 in the `launchers/` directory. Copy them to `~/bin` and modify, as it
 suits you.
 
+    $ stem -X sg2e -- -applaunch 245170
 
-```
-$ stem -X sg2e steam://rungameid/245170
-```
+To list the xboxdrv processes:
 
-To kill xboxdrv processes:
+    $ stem -l
 
-```
-$ stem -k
-```
+To kill the xboxdrv processes:
 
-To list available profiles:
+    $ stem -k
 
-```
-$ stem -p
-```
+To list the available profiles:
 
-To list xboxdrv processes:
-
-```
-$ stem -l
-```
+    $ stem -p
 
 To list detected devices:
 
-```
-$ stem -L
-```
+    $ stem -L
 
 To launch the client, without overloading loaded profiles:
 
-```
-$ stem -c
-```
+    $ stem -c
 
 
-## Miscellany
+Miscellany
+----------
 
 stem uses xboxdrv in keyboard emulation mode. That is, it maps the
 joystick buttons to keyboard inputs. The default behavior of xboxdrv,
@@ -171,16 +159,13 @@ xboxdrv shall be run without a password.
 
 Add xboxdrv to the sudoers file:
 
-```
-$ sudo visudo
-```
+    $ sudo visudo
 
 At the end of the file, append the following text, substituting `<USER>`
 by your username:
 
-```
-<USER> ALL = (ALL:ALL) SETENV: NOPASSWD: /usr/bin/xboxdrv
-```
+    <USER> ALL = (ALL:ALL) SETENV: NOPASSWD: /usr/bin/xboxdrv
+
 
 ### NixOS
 
@@ -203,12 +188,11 @@ security.sudo.configFile = ''
 
 Then, rebuild:
 
-```
-# nixos-rebuild switch
-```
+    # nixos-rebuild switch
 
 
-## Additional configuration
+Additional configuration
+------------------------
 
 You may need to blacklist the `xpad` driver, to make xboxdrv work.
 
@@ -217,20 +201,15 @@ You may need to blacklist the `xpad` driver, to make xboxdrv work.
 
 Edit `/etc/modprobe.d/blacklist.conf` then add the following:
 
-```
-blacklist xpad
-```
+    blacklist xpad
+
 
 ### NixOS
 
 Add the following to `/etc/nixos/configuration.nix`:
 
-```
-blacklistedKernelModules = [ "xpad" ];
-```
+    blacklistedKernelModules = [ "xpad" ];
 
 Then, rebuild:
 
-```
-# nixos-rebuild switch
-```
+    # nixos-rebuild switch
