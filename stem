@@ -69,7 +69,7 @@ parse_arguments () {
       (-p|--list-profiles) OPT_LIST_PROFILES=true; shift ;;
       (-l|--list-processes) OPT_LIST_PROCESSES=true; shift ;;
       (-L|--list-devices) OPT_LIST_DEVICES=true; shift ;;
-      (-s|--standalone) OPT_STANDALONE=ture; shift ;;
+      (-s|--standalone) OPT_STANDALONE=true; shift ;;
       (-w|--wine) OPT_WINE=true; shift ;;
       (--) shift; break ;;
       (*) break ;;
@@ -266,7 +266,6 @@ run_steam () {
 
 launch () {
   if [[ $# -ge 0 && -n "$OPT_ID" ]]; then
-      #run_steam "$OPT_ID"
       run_steam $@
   else
     display_usage
@@ -277,7 +276,6 @@ main () {
   debug main "$@"
   parse_arguments "$@"
   process_arguments "$@"
-  #check_privileges
   exec_options $@
   check_programs
   check_config
